@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Water Tank Problem</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        #container-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin-top: 20px;
+            position: relative;
+        }
+        #y-axis {
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: flex-end;
+            margin-right: 10px;
+        }
+        #container {
+            display: flex;
+            align-items: flex-end;
+            gap: 5px;
+            border-left: 1px solid black;
+            border-bottom: 1px solid black;
+            position: relative;
+        }
+        .block {
+            display: inline-block;
+            width: 30px;
+            position: relative;
+        }
+        .height-block {
+            background-color: gray;
+            border: 1px solid #888;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+        }
+        .water {
+            position: absolute;
+            bottom: 0;
+            background-color: blue;
+            opacity: 0.5;
+            width: 100%;
+        }
+        .y-label {
+            height: 30px;
+            line-height: 30px;
+        }
+        .grid-line {
+            position: absolute;
+            left: 0;
+            width: 100%;
+            border-top: 1px dashed lightgray;
+        }
+    </style>
+</head>
+<body>
+    <h1>Water Tank Problem</h1>
+    <input type="text" id="heights" placeholder="Enter block heights, e.g., 0,4,0,0,0,6,0,6,4,0">
+    <button onclick="calculateWater()">Calculate Water</button>
+    <div id="result"></div>
+    <div id="container-wrapper">
+        <div id="y-axis"></div>
+        <div id="container"></div>
+    </div>
+    <script>
+        function calculateWater() {
+            const heightsInput = document.getElementById('heights').value;
+            const heights = heightsInput.split(',').map(Number);
+            
+            const n = heights.length;
+            let leftMax = Array(n).fill(0);
+            let rightMax = Array(n).fill(0);
+            let water = 0;
+
+            leftMax[0] = heights[0];
+            for (let i = 1; i < n; i++) {
+                leftMax[i] = Math.max(leftMax[i - 1], heights[i]);
+            }
+
+            rightMax[n - 1] = heights[n - 1];
+            for (let i = n - 2; i >= 0; i--) {
+                rightMax[i] = Math.max(rightMax[i + 1], heights[i]);
+            }
+
+            for (let i = 0; i < n; i++) {
+                water += Math.min(leftMax[i], rightMax[i]) - heights[i];
+            }
+
+            document.getElementById('result').textContent = `${water} Units`;
+            drawVisualization(heights, leftMax, rightMax);
+        }
+
+        function drawVisualization(heights, leftMax, rightMax) {
+            const container = document.getElementById('container');
+            const yAxis = document.getElementById('y-axis');
+            container.innerHTML = '';
+            yAxis.innerHTML = '';
+            const maxHeight = Math.max(...heights);
+
+            // Create Y-axis labels and grid lines
+            for (let i = 0; i <= maxHeight; i++) {
+                const yLabel = document.createElement('div');
+                yLabel.className = 'y-label';
+                yLabel.textContent = i;
+                yAxis.appendChild(yLabel);
+
+                const gridLine = document.createElement('div');
+                gridLine.className = 'grid-line';
+                gridLine.style.bottom = `${i * 30}px`;
+                container.appendChild(gridLine);
+            }
+
+            heights.forEach((height, index) => {
+                const block = document.createElement('div');
+                block.className = 'block';
+                block.style.height = `${maxHeight * 30}px`;
+
+                const heightBlock = document.createElement('div');
+                heightBlock.className = 'height-block';
+                heightBlock.style.height = `${height * 30}px`;
+
+                const waterBlock = document.createElement('div');
+                const waterHeight = Math.min(leftMax[index], rightMax[index]) - height;
+                if (waterHeight > 0) {
+                    waterBlock.className = 'water';
+                    waterBlock.style.height = `${waterHeight * 30}px`;
+                }
+
+                block.appendChild(heightBlock);
+                if (waterHeight > 0) {
+                    block.appendChild(waterBlock);
+                }
+                container.appendChild(block);
+            });
+        }
+    </script>
+</body>
+</html>
